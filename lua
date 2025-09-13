@@ -1,4 +1,4 @@
---// Loader.lua for Roblox (Optimized for Performance)
+--// Loader.lua for Roblox (ESP fixed + FOV + toggles OFF, no lag spikes)
 
 -- Services
 local Players = game:GetService("Players")
@@ -109,7 +109,7 @@ local function updateESP()
     end
 end
 
--- Infinite Sprint (Runs once every 2 seconds)
+-- Infinite Sprint
 local function runInfiniteSprint()
     pcall(function()
         for i,v in pairs(getgc(true)) do
@@ -151,29 +151,13 @@ local function runAimlock()
     if closest then aimAtTarget(closest.Character) end
 end
 
--- RenderStepped (Optimized)
-local lastESPUpdate = 0
-local ESPUpdateRate = 0.1
-local lastSprint = 0
-local SprintInterval = 2
-
-RunService.RenderStepped:Connect(function(delta)
-    -- ESP Update (limited)
-    if tick() - lastESPUpdate > ESPUpdateRate then
-        lastESPUpdate = tick()
-        updateESP()
+-- RenderStepped (No lag spike)
+RunService.RenderStepped:Connect(function()
+    if Settings.InfiniteSprint then runInfiniteSprint() end
+    if Settings.ESPEnabled then updateESP() else
+        for player,_ in pairs(ESPs) do removeESP(player) end
     end
-
-    -- Infinite Sprint periodically
-    if Settings.InfiniteSprint and tick() - lastSprint > SprintInterval then
-        lastSprint = tick()
-        runInfiniteSprint()
-    end
-
-    -- Aimlock
     if Settings.AimlockEnabled then runAimlock() end
-
-    -- Player FOV
     Camera.FieldOfView = Settings.PlayerFOV
 end)
 
@@ -209,4 +193,4 @@ LocalPlayer.CharacterAdded:Connect(function()
     if Settings.ESPEnabled then updateESP() end
 end)
 
-print("Loader ready: Optimized for performance, all toggles OFF by default, ESP properly turns off.")
+print("Loader ready: ESP fixed, FOV working, all toggles OFF by default, no intentional lag spikes.")
