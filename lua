@@ -1,4 +1,4 @@
---// Loader.lua for Roblox (ESP fixed + FOV + toggles OFF, no lag spikes)
+--// Loader.lua for Roblox (ESP fixed + FOV + Wallbang + toggles OFF, no lag spikes)
 
 -- Services
 local Players = game:GetService("Players")
@@ -13,6 +13,7 @@ local Settings = {
     InfiniteSprint = false,
     ESPEnabled = false,
     AimlockEnabled = false,
+    WallbangEnabled = false,
     AimlockFOV = 150,
     AimlockActive = false,
     PlayerFOV = Camera.FieldOfView,
@@ -26,8 +27,8 @@ local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/Siri
 local Window = Rayfield:CreateWindow({
     Name = "Criminality Enhancer",
     LoadingTitle = "Loading...",
-    LoadingSubtitle = "by YourName",
-    Theme = "Dark",
+    LoadingSubtitle = "by lilnigga",
+    Theme = "dark",
     ConfigurationSaving = {Enabled=true, FolderName="CriminalityScripts", FileName="Settings"},
     KeySystem = false
 })
@@ -38,7 +39,6 @@ local Tab = Window:CreateTab("Features", 4483362458)
 -- ESP Table
 local ESPs = {}
 
--- ESP Functions
 local function createESP(player)
     if ESPs[player] then return end
     local character = player.Character
@@ -151,7 +151,18 @@ local function runAimlock()
     if closest then aimAtTarget(closest.Character) end
 end
 
--- RenderStepped (No lag spike)
+-- Wallbang Hook
+local oldRaycast = workspace.Raycast or workspace.Raycast
+workspace.Raycast = function(self, origin, direction, params)
+    if Settings.WallbangEnabled then
+        if not params then params = RaycastParams.new() end
+        params.FilterType = Enum.RaycastFilterType.Blacklist
+        params.FilterDescendantsInstances = {workspace.Map} -- replace 'Map' with wall objects
+    end
+    return oldRaycast(self, origin, direction, params)
+end
+
+-- RenderStepped
 RunService.RenderStepped:Connect(function()
     if Settings.InfiniteSprint then runInfiniteSprint() end
     if Settings.ESPEnabled then updateESP() else
@@ -161,13 +172,14 @@ RunService.RenderStepped:Connect(function()
     Camera.FieldOfView = Settings.PlayerFOV
 end)
 
--- Rayfield Toggles and Sliders (All OFF by default)
+-- Rayfield Toggles and Sliders
 Tab:CreateToggle({Name="Infinite Sprint", CurrentValue=false, Flag="InfiniteSprint", Callback=function(v) Settings.InfiniteSprint=v end})
 Tab:CreateToggle({Name="ESP", CurrentValue=false, Flag="ESP", Callback=function(v)
     Settings.ESPEnabled=v
     if not v then for p,_ in pairs(ESPs) do removeESP(p) end end
 end})
 Tab:CreateToggle({Name="Aimlock", CurrentValue=false, Flag="Aimlock", Callback=function(v) Settings.AimlockEnabled=v end})
+Tab:CreateToggle({Name="Wallbang", CurrentValue=false, Flag="Wallbang", Callback=function(v) Settings.WallbangEnabled=v end})
 
 Tab:CreateSlider({Name="Aimlock FOV", Range={50,500}, Increment=5, Suffix="px", CurrentValue=150, Flag="AimlockFOV", Callback=function(v) Settings.AimlockFOV=v end})
 Tab:CreateSlider({Name="Aimlock Prediction", Range={0,0.5}, Increment=0.01, Suffix="", CurrentValue=0.18, Flag="AimlockPrediction", Callback=function(v) Settings.AimlockPrediction=v end})
@@ -193,4 +205,4 @@ LocalPlayer.CharacterAdded:Connect(function()
     if Settings.ESPEnabled then updateESP() end
 end)
 
-print("Loader ready: ESP fixed, FOV working, all toggles OFF by default, no intentional lag spikes.")
+print("Loader ready: ESP fixed, FOV working, Wallbang toggle added, all toggles OFF by default.")
