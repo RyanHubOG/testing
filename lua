@@ -1,8 +1,8 @@
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
 local Window = Rayfield:CreateWindow({
-    Name = "Criminality Enhancer",
+    Name = "UniScript",
     LoadingTitle = "Loading...",
-    LoadingSubtitle = "by YourName",
+    LoadingSubtitle = "by Ryan",
     Theme = "Dark",
     ConfigurationSaving = {
         Enabled = true,
@@ -11,10 +11,10 @@ local Window = Rayfield:CreateWindow({
     },
     Discord = {
         Enabled = true,
-        Invite = "yourdiscordinvitecode",
+        Invite = "https://discord.gg/dJEM47ZtGa",
         RememberJoins = true
     },
-    KeySystem = true,
+    KeySystem = false,
     KeySettings = {
         Title = "Access Key",
         Subtitle = "Enter the key to continue",
