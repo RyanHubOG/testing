@@ -1,5 +1,4 @@
---// Loader.lua for Roblox
---// Features: Infinite Sprint, Enhanced ESP, Right-Click Predictive Head Aimlock, Aimlock FOV, Player FOV, Copy Server Link, Rayfield UI
+--// Loader.lua for Roblox (Optimized for Performance)
 
 -- Services
 local Players = game:GetService("Players")
@@ -9,7 +8,7 @@ local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 local Mouse = LocalPlayer:GetMouse()
 
--- Settings
+-- Settings (All OFF by default)
 local Settings = {
     InfiniteSprint = false,
     ESPEnabled = false,
@@ -17,7 +16,7 @@ local Settings = {
     AimlockFOV = 150,
     AimlockActive = false,
     PlayerFOV = Camera.FieldOfView,
-    AimlockPrediction = 0.18, -- Default prediction factor
+    AimlockPrediction = 0.18,
 }
 
 -- Load Rayfield UI
@@ -29,11 +28,7 @@ local Window = Rayfield:CreateWindow({
     LoadingTitle = "Loading...",
     LoadingSubtitle = "by YourName",
     Theme = "Dark",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "CriminalityScripts",
-        FileName = "Settings"
-    },
+    ConfigurationSaving = {Enabled=true, FolderName="CriminalityScripts", FileName="Settings"},
     KeySystem = false
 })
 
@@ -51,15 +46,14 @@ local function createESP(player)
 
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "ESP"
-    billboard.Size = UDim2.new(0, 120, 0, 50)
+    billboard.Size = UDim2.new(0,120,0,50)
     billboard.Adornee = character.HumanoidRootPart
     billboard.AlwaysOnTop = true
-    billboard.StudsOffset = Vector3.new(0, 2, 0)
+    billboard.StudsOffset = Vector3.new(0,2,0)
     billboard.Parent = game.CoreGui
 
-    -- Name Label
     local nameLabel = Instance.new("TextLabel")
-    nameLabel.Size = UDim2.new(1, 0, 0.4, 0)
+    nameLabel.Size = UDim2.new(1,0,0.4,0)
     nameLabel.BackgroundTransparency = 1
     nameLabel.TextColor3 = Color3.new(0,1,0)
     nameLabel.TextStrokeTransparency = 0
@@ -68,17 +62,15 @@ local function createESP(player)
     nameLabel.Text = player.Name
     nameLabel.Parent = billboard
 
-    -- Health Bar
     local healthBar = Instance.new("Frame")
-    healthBar.Size = UDim2.new(1, 0, 0.2, 0)
+    healthBar.Size = UDim2.new(1,0,0.2,0)
     healthBar.Position = UDim2.new(0,0,0.4,0)
     healthBar.BackgroundColor3 = Color3.fromRGB(0,255,0)
     healthBar.BorderSizePixel = 0
     healthBar.Parent = billboard
 
-    -- Distance Label
     local distLabel = Instance.new("TextLabel")
-    distLabel.Size = UDim2.new(1, 0, 0.4, 0)
+    distLabel.Size = UDim2.new(1,0,0.4,0)
     distLabel.Position = UDim2.new(0,0,0.6,0)
     distLabel.BackgroundTransparency = 1
     distLabel.TextColor3 = Color3.new(1,1,0)
@@ -88,7 +80,7 @@ local function createESP(player)
     distLabel.Text = ""
     distLabel.Parent = billboard
 
-    ESPs[player] = {Billboard = billboard, Name = nameLabel, HealthBar = healthBar, Distance = distLabel}
+    ESPs[player] = {Billboard=billboard, Name=nameLabel, HealthBar=healthBar, Distance=distLabel}
 end
 
 local function removeESP(player)
@@ -99,13 +91,13 @@ local function removeESP(player)
 end
 
 local function updateESP()
-    for _, player in pairs(Players:GetPlayers()) do
+    for _,player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") then
             if Settings.ESPEnabled then
                 if not ESPs[player] then createESP(player) end
                 local hum = player.Character.Humanoid
                 local root = player.Character.HumanoidRootPart
-                ESPs[player].HealthBar.Size = UDim2.new(hum.Health / hum.MaxHealth, 0, 0.2, 0)
+                ESPs[player].HealthBar.Size = UDim2.new(hum.Health / hum.MaxHealth,0,0.2,0)
                 local distance = (root.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
                 ESPs[player].Distance.Text = string.format("%.0f studs", distance)
             else
@@ -117,11 +109,11 @@ local function updateESP()
     end
 end
 
--- Infinite Sprint
+-- Infinite Sprint (Runs once every 2 seconds)
 local function runInfiniteSprint()
     pcall(function()
         for i,v in pairs(getgc(true)) do
-            if type(v) == "table" and rawget(v,"S") then
+            if type(v)=="table" and rawget(v,"S") then
                 v.S = 100
             end
         end
@@ -131,11 +123,9 @@ end
 -- Predictive Head Aimlock
 local function aimAtTarget(target)
     if target and target:FindFirstChild("Head") and target:FindFirstChild("HumanoidRootPart") then
-        local cam = workspace.CurrentCamera
+        local cam = Camera
         local head = target.Head
         local root = target.HumanoidRootPart
-
-        -- Prediction
         local predictedPos = head.Position + root.Velocity * (Settings.AimlockPrediction or 0.18)
         local direction = (predictedPos - cam.CFrame.Position).Unit
         cam.CFrame = CFrame.new(cam.CFrame.Position, cam.CFrame.Position + direction)
@@ -146,11 +136,11 @@ local function runAimlock()
     if not Settings.AimlockActive then return end
     local closest
     local shortest = Settings.AimlockFOV
-    for _, player in pairs(Players:GetPlayers()) do
+    for _,player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
             local screenPos, onScreen = Camera:WorldToViewportPoint(player.Character.Head.Position)
             if onScreen then
-                local dist = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(Mouse.X, Mouse.Y)).Magnitude
+                local dist = (Vector2.new(screenPos.X,screenPos.Y)-Vector2.new(Mouse.X,Mouse.Y)).Magnitude
                 if dist < shortest then
                     shortest = dist
                     closest = player
@@ -158,98 +148,59 @@ local function runAimlock()
             end
         end
     end
-    if closest then
-        aimAtTarget(closest.Character)
-    end
+    if closest then aimAtTarget(closest.Character) end
 end
 
--- Run Features Each Frame
-RunService.RenderStepped:Connect(function()
-    if Settings.InfiniteSprint then runInfiniteSprint() end
-    if Settings.ESPEnabled then updateESP() end
+-- RenderStepped (Optimized)
+local lastESPUpdate = 0
+local ESPUpdateRate = 0.1
+local lastSprint = 0
+local SprintInterval = 2
+
+RunService.RenderStepped:Connect(function(delta)
+    -- ESP Update (limited)
+    if tick() - lastESPUpdate > ESPUpdateRate then
+        lastESPUpdate = tick()
+        updateESP()
+    end
+
+    -- Infinite Sprint periodically
+    if Settings.InfiniteSprint and tick() - lastSprint > SprintInterval then
+        lastSprint = tick()
+        runInfiniteSprint()
+    end
+
+    -- Aimlock
     if Settings.AimlockEnabled then runAimlock() end
+
+    -- Player FOV
     Camera.FieldOfView = Settings.PlayerFOV
 end)
 
--- Rayfield Toggles and Sliders
-Tab:CreateToggle({
-    Name = "Infinite Sprint",
-    CurrentValue = Settings.InfiniteSprint,
-    Flag = "InfiniteSprint",
-    Callback = function(Value) Settings.InfiniteSprint = Value end
-})
+-- Rayfield Toggles and Sliders (All OFF by default)
+Tab:CreateToggle({Name="Infinite Sprint", CurrentValue=false, Flag="InfiniteSprint", Callback=function(v) Settings.InfiniteSprint=v end})
+Tab:CreateToggle({Name="ESP", CurrentValue=false, Flag="ESP", Callback=function(v)
+    Settings.ESPEnabled=v
+    if not v then for p,_ in pairs(ESPs) do removeESP(p) end end
+end})
+Tab:CreateToggle({Name="Aimlock", CurrentValue=false, Flag="Aimlock", Callback=function(v) Settings.AimlockEnabled=v end})
 
-Tab:CreateToggle({
-    Name = "ESP",
-    CurrentValue = Settings.ESPEnabled,
-    Flag = "ESP",
-    Callback = function(Value)
-        Settings.ESPEnabled = Value
-        if not Value then
-            for _,v in pairs(ESPs) do v:Destroy() end
-            ESPs = {}
-        end
-    end
-})
+Tab:CreateSlider({Name="Aimlock FOV", Range={50,500}, Increment=5, Suffix="px", CurrentValue=150, Flag="AimlockFOV", Callback=function(v) Settings.AimlockFOV=v end})
+Tab:CreateSlider({Name="Aimlock Prediction", Range={0,0.5}, Increment=0.01, Suffix="", CurrentValue=0.18, Flag="AimlockPrediction", Callback=function(v) Settings.AimlockPrediction=v end})
+Tab:CreateSlider({Name="Player FOV", Range={70,120}, Increment=1, Suffix="", CurrentValue=Camera.FieldOfView, Flag="PlayerFOV", Callback=function(v) Settings.PlayerFOV=v end})
 
-Tab:CreateToggle({
-    Name = "Aimlock",
-    CurrentValue = Settings.AimlockEnabled,
-    Flag = "Aimlock",
-    Callback = function(Value) Settings.AimlockEnabled = Value end
-})
+Tab:CreateButton({Name="Copy Server Link", Callback=function()
+    setclipboard("https://www.roblox.com/games/"..game.PlaceId.."/"..game.JobId)
+end})
 
-Tab:CreateSlider({
-    Name = "Aimlock FOV",
-    Range = {50, 500},
-    Increment = 5,
-    Suffix = "px",
-    CurrentValue = Settings.AimlockFOV,
-    Flag = "AimlockFOV",
-    Callback = function(Value) Settings.AimlockFOV = Value end
-})
-
-Tab:CreateSlider({
-    Name = "Aimlock Prediction",
-    Range = {0, 0.5},
-    Increment = 0.01,
-    Suffix = "",
-    CurrentValue = Settings.AimlockPrediction,
-    Flag = "AimlockPrediction",
-    Callback = function(Value) Settings.AimlockPrediction = Value end
-})
-
-Tab:CreateSlider({
-    Name = "Player FOV",
-    Range = {70, 120},
-    Increment = 1,
-    Suffix = "",
-    CurrentValue = Settings.PlayerFOV,
-    Flag = "PlayerFOV",
-    Callback = function(Value) Settings.PlayerFOV = Value end
-})
-
-Tab:CreateButton({
-    Name = "Copy Server Link",
-    Callback = function()
-        local serverLink = "https://www.roblox.com/games/"..game.PlaceId.."/"..game.JobId
-        setclipboard(serverLink)
-    end
-})
-
--- Right-Click Aimlock Activation
-UserInputService.InputBegan:Connect(function(input, gpe)
+-- Right-Click Aimlock
+UserInputService.InputBegan:Connect(function(input,gpe)
     if gpe then return end
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        Settings.AimlockActive = true
-    end
+    if input.UserInputType==Enum.UserInputType.MouseButton2 then Settings.AimlockActive=true end
 end)
-
-UserInputService.InputEnded:Connect(function(input, gpe)
+UserInputService.InputEnded:Connect(function(input,gpe)
     if gpe then return end
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        Settings.AimlockActive = false
-    end
+    if input.UserInputType==Enum.UserInputType.MouseButton2 then Settings.AimlockActive=false end
 end)
 
 -- Reset ESP on respawn
@@ -258,4 +209,4 @@ LocalPlayer.CharacterAdded:Connect(function()
     if Settings.ESPEnabled then updateESP() end
 end)
 
-print("Loader Enhanced: Infinite Sprint, ESP with Health/Distance, Right-Click Predictive Head Aimlock, Aimlock FOV, Player FOV, Copy Server Link ready!")
+print("Loader ready: Optimized for performance, all toggles OFF by default, ESP properly turns off.")
